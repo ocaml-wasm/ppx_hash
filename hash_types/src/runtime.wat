@@ -11,13 +11,22 @@
       (func $caml_hash_mix_int64 (param i32) (param i64) (result i32)))
    (import "env" "caml_hash_mix_double"
       (func $caml_hash_mix_double (param i32) (param f64) (result i32)))
+(@if use-js-string
+(@then
    (import "env" "caml_hash_mix_string"
       (func $caml_hash_mix_string
          (param i32) (param (ref $string)) (result i32)))
+)
+(@else
+   (import "env" "caml_hash_mix_bytes"
+      (func $caml_hash_mix_bytes
+         (param i32) (param (ref $bytes)) (result i32)))
+))
    (import "env" "caml_hash_mix_final"
       (func $caml_hash_mix_final (param i32) (result i32)))
 
-   (type $string (array (mut i8)))
+   (type $bytes (array (mut i8)))
+   (type $string (struct (field anyref)))
    (type $compare
       (func (param (ref eq)) (param (ref eq)) (param i32) (result i32)))
    (type $hash
@@ -65,9 +74,18 @@
    (func (export "Base_internalhash_fold_string")
       (param $st (ref eq)) (param $s (ref eq)) (result (ref eq))
       (call $caml_copy_int32
+(@if use-js-string
+(@then
          (call $caml_hash_mix_string
             (call $Int32_val (local.get $st))
-            (ref.cast (ref $string) (local.get $s)))))
+            (ref.cast (ref $string) (local.get $s)))
+)
+(@else
+         (call $caml_hash_mix_bytes
+            (call $Int32_val (local.get $st))
+            (ref.cast (ref $bytes) (local.get $s)))
+))
+   ))
 
    (func (export "Base_internalhash_get_hash_value")
       (param $st (ref eq)) (result (ref eq))
