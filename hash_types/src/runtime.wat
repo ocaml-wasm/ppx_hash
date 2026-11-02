@@ -1,4 +1,6 @@
 (module
+   (@string_imports "str")
+   (@string_type $string)
    (import "env" "Int32_val" (func $Int32_val (param (ref eq)) (result i32)))
    (import "env" "Int64_val" (func $Int64_val (param (ref eq)) (result i64)))
    (import "env" "Double_val"
@@ -17,7 +19,11 @@
    (import "env" "caml_hash_mix_final"
       (func $caml_hash_mix_final (param i32) (result i32)))
 
-   (type $string (array (mut i8)))
+(@if $use_js_string
+(@then
+   (type $string (struct (field externref))))
+(@else
+   (type $string (array (mut i8)))))
    (type $compare
       (func (param (ref eq)) (param (ref eq)) (param i32) (result i32)))
    (type $hash
